@@ -2,6 +2,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.kapt")
+    id("com.google.dagger.hilt.android") version "2.48"
+}
+
+hilt {
+    enableAggregatingTask = false
 }
 
 android {
@@ -37,6 +43,15 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.6.0"
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("com.squareup:javapoet:1.13.0")
+    }
 }
 
 dependencies {
@@ -49,6 +64,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.hilt.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +72,52 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Jetpack Compose
+    implementation("androidx.compose.ui:ui:1.6.0")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-compiler:2.48")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // Testing
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // Other
+    implementation("androidx.core:core-ktx:1.12.0")
+
+    implementation ("com.squareup:javapoet:1.13.0") // Use 1.11.0 or later
+
+    // Kotlin Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3") // adjust version
+
+    implementation("androidx.hilt:hilt-work:1.2.0") // ✅ Required for @HiltWorker
+    kapt("androidx.hilt:hilt-compiler:1.1.0")       // ✅ Required for annotation processing
+    implementation("androidx.work:work-runtime-ktx:2.10.2") // ✅ Or latest stable
+    testImplementation(kotlin("test"))
+    // JUnit
+    testImplementation("junit:junit:4.13.2")
+
+    // Coroutines test
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // Mocking
+    testImplementation("io.mockk:mockk:1.13.9")
+
+    // Truth or AssertJ (optional, for fluent assertions)
+    testImplementation("com.google.truth:truth:1.1.5")
+
+    // For Hilt ViewModel (optional in unit test)
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
 }
