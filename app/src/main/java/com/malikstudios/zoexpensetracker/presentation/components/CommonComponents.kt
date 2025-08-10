@@ -49,10 +49,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.malikstudios.zoexpensetracker.domain.model.Currency
-import com.malikstudios.zoexpensetracker.domain.model.SupportedCurrencies
+
+
 import com.malikstudios.zoexpensetracker.ui.theme.AppColors
 import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
+
 
 /**
  * Animated amount display card with professional financial styling
@@ -61,7 +62,6 @@ import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
 fun AmountDisplayCard(
     title: String,
     amount: Long,
-    currency: Currency,
     modifier: Modifier = Modifier,
     isPositive: Boolean = true,
     showAnimation: Boolean = true
@@ -93,7 +93,7 @@ fun AmountDisplayCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = CurrencyUtils.formatAmountWithCurrency(animatedAmount.toLong(), currency),
+                text = CurrencyUtils.formatPaiseToRupeeString(animatedAmount.toLong()),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = if (isPositive) AppColors.Success else AppColors.Error
@@ -304,184 +304,7 @@ fun AmountDisplayCard(
 //    }
 //}
 
-/**
- * Currency selector with popular currencies
- */
-@Composable
-fun CurrencySelector(
-    selectedCurrency: Currency,
-    onCurrencyChanged: (Currency) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-    
-    Column(modifier = modifier) {
-        // Selected currency display
-        OutlinedTextField(
-            value = "${selectedCurrency.symbol} ${selectedCurrency.code} - ${selectedCurrency.name}",
-            onValueChange = { },
-            label = { Text("Currency") },
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = !expanded },
-            trailingIcon = {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (expanded) "Collapse" else "Expand"
-                )
-            }
-        )
-        
-        // Currency options
-        AnimatedVisibility(
-            visible = expanded,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(modifier = Modifier.padding(8.dp)) {
-                    Text(
-                        text = "Popular Currencies",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                    
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        items(SupportedCurrencies.POPULAR) { currency ->
-                            CurrencyChip(
-                                currency = currency,
-                                isSelected = currency == selectedCurrency,
-                                onClick = {
-                                    onCurrencyChanged(currency)
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                    
-                    Text(
-                        text = "All Currencies",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                    
-                    LazyColumn(
-                        modifier = Modifier.height(200.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(SupportedCurrencies.ALL) { currency ->
-                            CurrencyListItem(
-                                currency = currency,
-                                isSelected = currency == selectedCurrency,
-                                onClick = {
-                                    onCurrencyChanged(currency)
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
-/**
- * Currency chip component
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CurrencyChip(
-    currency: Currency,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    FilterChip(
-        selected = isSelected,
-        onClick = onClick,
-        label = {
-            Text(text = "${currency.symbol} ${currency.code}")
-        },
-        modifier = modifier
-    )
-}
-
-/**
- * Currency list item for expanded view
- */
-@Composable
-fun CurrencyListItem(
-    currency: Currency,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = currency.symbol,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = currency.code,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = currency.name,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Selected",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
 
 /**
  * Loading shimmer effect for better UX

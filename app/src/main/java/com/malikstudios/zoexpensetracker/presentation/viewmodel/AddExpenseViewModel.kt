@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.malikstudios.zoexpensetracker.domain.model.Category
 import com.malikstudios.zoexpensetracker.domain.model.Expense
-import com.malikstudios.zoexpensetracker.domain.model.SupportedCurrencies
+
 import com.malikstudios.zoexpensetracker.domain.usecase.AddExpenseUseCase
 import com.malikstudios.zoexpensetracker.domain.usecase.GetExpensesByDateUseCase
 import com.malikstudios.zoexpensetracker.domain.usecase.GetTotalForDateUseCase
@@ -82,10 +82,10 @@ class AddExpenseViewModel @Inject constructor(
             try {
                 _uiState.value = state.copy(isSaving = true, error = null)
 
-                // Save expense using the new currency system
+                // Save expense using Rupee system
                 val expense = Expense(
                     title = state.name,
-                    amountInSmallestUnit = CurrencyUtils.parseToSmallestUnit(state.amount, state.currency).getOrNull() ?: 0L,
+                    amountInSmallestUnit = CurrencyUtils.parseToPaise(state.amount).getOrNull() ?: 0L,
                     category = state.category,
                     notes = state.notes,
                     date = state.date,
@@ -103,7 +103,7 @@ class AddExpenseViewModel @Inject constructor(
                     notes = "",
                     date = DateUtils.todayDateString(),
                     category = Category.Other,
-                    currency = SupportedCurrencies.DEFAULT
+
                 )
 
                 getTodayTotal() // Refresh today's total after saving

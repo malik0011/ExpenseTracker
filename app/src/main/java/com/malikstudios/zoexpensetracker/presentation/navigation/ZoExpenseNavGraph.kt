@@ -34,18 +34,11 @@ fun ExpenseNavGraph(
                 innerPadding = innerPadding,
                 uiState = state,
                 onEvent = { event ->
-                    when (event) {
-                        is HomeUiEvent.CreateNew -> navController.navigate(NavRoutes.AddExpense.route)
-                        is HomeUiEvent.OpenItem -> {
-                            // Handle opening an item, e.g., navigate to details screen
-                        }
-                        is HomeUiEvent.ToggleLayout -> {}//viewModel.toggleLayout()
-                        is HomeUiEvent.Search -> {
-                            // Handle search event
-                        }
-                        is HomeUiEvent.RefreshData -> {}
-                            // Handle refresh event, e.g., reload data
-                        }
+                    if (event == HomeUiEvent.CreateNew) {
+                        navController.navigate(NavRoutes.AddExpense.route)
+                        return@HomeScreen
+                    }
+                    viewModel.onEvent(event)
                 }
             )
         }

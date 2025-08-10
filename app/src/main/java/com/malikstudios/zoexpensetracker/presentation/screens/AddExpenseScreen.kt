@@ -45,7 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.malikstudios.zoexpensetracker.domain.model.Category
-import com.malikstudios.zoexpensetracker.domain.model.SupportedCurrencies
+
 import com.malikstudios.zoexpensetracker.presentation.AddExpenseUiEvent
 import com.malikstudios.zoexpensetracker.presentation.AddExpenseUiState
 import com.malikstudios.zoexpensetracker.ui.theme.AppColors
@@ -118,7 +118,7 @@ fun AddExpenseScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = CurrencyUtils.formatAmountWithCurrency(uiState.todayTotal, uiState.currency),
+                            text = CurrencyUtils.formatPaiseToRupeeString(uiState.todayTotal),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = AppColors.Primary
@@ -144,7 +144,7 @@ fun AddExpenseScreen(
                 label = { Text("Amount") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                prefix = { Text(uiState.currency.symbol) },
+                prefix = { Text("₹") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 isError = uiState.amount.isBlank() && uiState.error != null
             )
@@ -291,7 +291,7 @@ private fun AddExpenseScreenPreview() {
                 name = "Office Lunch",
                 amount = "250.50",
                 category = Category.Other,
-                currency = SupportedCurrencies.INR,
+
                 notes = "Team lunch at nearby restaurant",
                 date = "2024-01-15",
                 todayTotal = 125000, // ₹1,250.00 in paise

@@ -1,14 +1,14 @@
 package com.malikstudios.zoexpensetracker.presentation
 
 import com.malikstudios.zoexpensetracker.domain.model.Category
-import com.malikstudios.zoexpensetracker.domain.model.SupportedCurrencies
+
 import com.malikstudios.zoexpensetracker.utils.DateUtils
 
 // ---------- Home UI State ----------
 data class HomeUiState(
     val recentItems: List<DocumentItem> = emptyList(),
     val allItems: List<DocumentItem> = emptyList(),
-    val totalSpentToday: Long = 0L, // In smallest currency unit
+    val totalSpentToday: Long = 0L, // In paise (smallest Rupee unit)
     val totalCount: Int = 0,
     val isGrid: Boolean = true,
     val isLoading: Boolean = true,
@@ -21,7 +21,7 @@ data class DocumentItem(
     val id: String,
     val title: String,
     val subtitle: String,
-    val amount: String, // Formatted amount with currency
+    val amount: String, // Formatted amount in Rupees
     val category: Category,
     val timestamp: Long,
     val thumbnailRes: Int? = null
@@ -34,7 +34,7 @@ data class AddExpenseUiState(
     val category: Category = Category.Other,
     val notes: String = "",
     val date: String = DateUtils.todayDateString(),
-    val todayTotal: Long = 0L, // Real-time today's total in smallest unit
+    val todayTotal: Long = 0L, // Real-time today's total in paise
     val isSaving: Boolean = false,
     val showCategoryPicker: Boolean = false,
     val error: String? = null,

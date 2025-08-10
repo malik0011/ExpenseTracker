@@ -9,6 +9,7 @@ import com.malikstudios.zoexpensetracker.domain.usecase.GetTotalForDateUseCase
 import com.malikstudios.zoexpensetracker.presentation.DocumentItem
 import com.malikstudios.zoexpensetracker.presentation.HomeUiEvent
 import com.malikstudios.zoexpensetracker.presentation.HomeUiState
+import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
 import com.malikstudios.zoexpensetracker.utils.DateUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,31 +41,39 @@ class ExpenseViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState(
         recentItems = emptyList(),
         allItems = emptyList(),
+        totalSpentToday = 0L,
+        totalCount = 0,
         isGrid = false,
         isLoading = true
     ))
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private var currentDate = DateUtils.todayDateString()
 
     init {
         observeTodayExpenses()
     }
 
     private fun observeTodayExpenses() {
-        val today = DateUtils.todayDateString()
+        loadExpensesForDate(currentDate)
+    }
 
+    private fun loadExpensesForDate(date: String) {
+        currentDate = date
+        
         combine(
-            getExpensesByDate(today),
-            getTotalForDate(today)
+            getExpensesByDate(date),
+            getTotalForDate(date)
         ) { expenses, total ->
             val documentItems = expenses.map {
                 DocumentItem(
                     id = it.id.toString(),
                     title = it.title,
-                    subtitle = "₹${it.amountInSmallestUnit} • ${it.category.name}",
-                    amount = "₹${it.amountInSmallestUnit}",
+                    subtitle = "${it.category.name} • ${CurrencyUtils.formatPaiseToRupeeString(it.amountInSmallestUnit)}",
+                    amount = CurrencyUtils.formatPaiseToRupeeString(it.amountInSmallestUnit),
                     category = it.category,
                     timestamp = it.timestampMillis,
-                    thumbnailRes = 0 // Placeholder for thumbnail, can be replaced with actual image resource
+                    thumbnailRes = null
                 )
             }
 
@@ -74,6 +83,8 @@ class ExpenseViewModel @Inject constructor(
             _uiState.value.copy(
                 recentItems = recent,
                 allItems = documentItems,
+                totalSpentToday = total.sumOf { it.amountInSmallestUnit } ,
+                totalCount = expenses.size,
                 isLoading = false
             )
         }
@@ -99,6 +110,12 @@ class ExpenseViewModel @Inject constructor(
             }
             is HomeUiEvent.Search -> {
                 // Trigger search UI
+            }
+            is HomeUiEvent.ChangeDate -> {
+                loadExpensesForDate(event.date)
+            }
+            is HomeUiEvent.RefreshData -> {
+                loadExpensesForDate(currentDate)
             }
             else -> {}
         }

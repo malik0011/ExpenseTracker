@@ -9,6 +9,7 @@ sealed interface HomeUiEvent {
     data object ToggleLayout : HomeUiEvent
     data object Search : HomeUiEvent
     data object RefreshData : HomeUiEvent
+    data class ChangeDate(val date: String) : HomeUiEvent
 }
 
 // ---------- Add Expense UI Events ----------

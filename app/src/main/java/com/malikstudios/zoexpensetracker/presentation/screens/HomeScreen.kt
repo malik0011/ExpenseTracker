@@ -1,33 +1,24 @@
 package com.malikstudios.zoexpensetracker.presentation.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -36,176 +27,493 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.malikstudios.zoexpensetracker.R
 import com.malikstudios.zoexpensetracker.domain.model.Category
-import com.malikstudios.zoexpensetracker.presentation.AddExpenseUiEvent
 import com.malikstudios.zoexpensetracker.presentation.DocumentItem
 import com.malikstudios.zoexpensetracker.presentation.HomeUiEvent
 import com.malikstudios.zoexpensetracker.presentation.HomeUiState
 import com.malikstudios.zoexpensetracker.ui.theme.ZoExpenseTrackerTheme
+import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
+import com.malikstudios.zoexpensetracker.utils.DateUtils
 
-// ---------- Stateless Home Screen ----------
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    innerPadding: PaddingValues,
+    innerPadding: androidx.compose.foundation.layout.PaddingValues,
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit
 ) {
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var selectedDate by remember { mutableStateOf(DateUtils.todayDateString()) }
+    var groupByCategory by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Home") }
+                title = { Text("Expense Tracker") },
+                navigationIcon = {
+                    IconButton(onClick = { onEvent(HomeUiEvent.RefreshData) }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onEvent(HomeUiEvent.Search) }) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+                }
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = !uiState.isLoading,
-                enter = fadeIn(),
-                exit = fadeOut()
+            FloatingActionButton(
+                onClick = { onEvent(HomeUiEvent.CreateNew) }
             ) {
-                FloatingActionButton(
-                    onClick = { onEvent(HomeUiEvent.CreateNew) }
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Create New")
-                }
+                Icon(Icons.Default.Add, contentDescription = "Add Expense")
             }
         }
-    ) { innerPadding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding() + 8.dp)
-                .padding(bottom = 16.dp),
+                .padding(padding)
         ) {
+            // Header Section with Stats
+            HeaderSection(
+                totalAmount = uiState.totalSpentToday,
+                totalCount = uiState.totalCount,
+                selectedDate = selectedDate,
+                onDateClick = { showDatePicker = true },
+                onTodayClick = {
+                    selectedDate = DateUtils.todayDateString()
+                    onEvent(HomeUiEvent.ChangeDate(DateUtils.todayDateString()))
+                }
+            )
 
-                // Recent Items Row
-                if (uiState.recentItems.isNotEmpty()) {
+            // Controls Section
+            ControlsSection(
+                groupByCategory = groupByCategory,
+                onGroupingChanged = { groupByCategory = it }
+            )
+
+            // Error Message
+            if (uiState.error != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
                     Text(
-                        text = "Recent",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = uiState.error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(16.dp)
                     )
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.recentItems) { item ->
-                            RecentCard(item) { onEvent(HomeUiEvent.OpenItem(item.id)) }
-                        }
-                    }
-                    Spacer(Modifier.height(16.dp))
                 }
+            }
 
-                // All Items List/Grid
-                if (uiState.isGrid) {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(uiState.allItems) { item ->
-                            DocumentCard(item) { onEvent(HomeUiEvent.OpenItem(item.id)) }
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(uiState.allItems) { item ->
-                            DocumentListItem(item) { onEvent(HomeUiEvent.OpenItem(item.id)) }
-                        }
-                    }
-                }
-
-//        }
-
-        }
-    }
-}
-
-// ---------- Reusable Item Components ----------
-@Composable
-fun RecentCard(item: DocumentItem, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .size(120.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(8.dp)
+            // Expenses List
+            ExpensesList(
+                expenses = uiState.allItems,
+                groupByCategory = groupByCategory,
+                onExpenseClick = { expenseId -> onEvent(HomeUiEvent.OpenItem(expenseId)) },
+                isLoading = uiState.isLoading,
+                selectedDate = selectedDate
             )
         }
     }
 }
 
 @Composable
-fun DocumentCard(item: DocumentItem, onClick: () -> Unit) {
+private fun HeaderSection(
+    totalAmount: Long,
+    totalCount: Int,
+    selectedDate: String,
+    onDateClick: () -> Unit,
+    onTodayClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp)
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(item.title, style = MaterialTheme.typography.titleMedium)
-            Text(item.subtitle, style = MaterialTheme.typography.bodySmall)
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Date Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_calendar_month),
+                    contentDescription = "Date",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (selectedDate == DateUtils.todayDateString()) "Today" else selectedDate,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.clickable { onDateClick() }
+                )
+                
+                if (selectedDate != DateUtils.todayDateString()) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Today",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .clickable { onTodayClick() }
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .background(
+                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Stats Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Total Amount
+                Column(
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = "Total Spent",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = CurrencyUtils.formatPaiseToRupeeString(totalAmount),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                
+                // Total Count
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "Total Items",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = totalCount.toString(),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun DocumentListItem(item: DocumentItem, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text(item.title) },
-        supportingContent = { Text(item.subtitle) },
-        modifier = Modifier.clickable(onClick = onClick)
-    )
+private fun ControlsSection(
+    groupByCategory: Boolean,
+    onGroupingChanged: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Group by:",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Row {
+            // Time Grouping
+            Surface(
+                modifier = Modifier.clickable { onGroupingChanged(false) },
+                shape = RoundedCornerShape(20.dp),
+                color = if (!groupByCategory) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_schedule),
+                        contentDescription = "Time",
+                        modifier = Modifier.size(16.dp),
+                        tint = if (!groupByCategory) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Time",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (!groupByCategory) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Category Grouping
+            Surface(
+                modifier = Modifier.clickable { onGroupingChanged(true) },
+                shape = RoundedCornerShape(20.dp),
+                color = if (groupByCategory) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_category),
+                        contentDescription = "Category",
+                        modifier = Modifier.size(16.dp),
+                        tint = if (groupByCategory) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Category",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (groupByCategory) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExpensesList(
+    expenses: List<DocumentItem>,
+    groupByCategory: Boolean,
+    onExpenseClick: (String) -> Unit,
+    isLoading: Boolean = false,
+    selectedDate: String
+) {
+    if (isLoading && expenses.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Loading expenses...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    } else if (expenses.isEmpty()) {
+        EmptyState(selectedDate = selectedDate)
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (groupByCategory) {
+                // Group by category
+                val groupedExpenses = expenses.groupBy { it.category }
+                groupedExpenses.forEach { (category, categoryExpenses) ->
+                    item {
+                        CategoryHeader(category, categoryExpenses.sumOf { 
+                            it.amount.replace("₹", "").toDoubleOrNull() ?: 0.0 
+                        })
+                    }
+                    items(categoryExpenses) { expense ->
+                        ExpenseItem(expense, onExpenseClick)
+                    }
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                }
+            } else {
+                // Group by time (chronological)
+                items(expenses.sortedByDescending { it.timestamp }) { expense ->
+                    ExpenseItem(expense, onExpenseClick)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryHeader(category: Category, totalAmount: Double) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = category.name,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = "₹${String.format("%.2f", totalAmount)}",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun ExpenseItem(expense: DocumentItem, onExpenseClick: (String) -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onExpenseClick(expense.id) },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Category Icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = expense.category.name.first().toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Expense Details
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = expense.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = expense.subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Amount
+            Text(
+                text = expense.amount,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(selectedDate: String = DateUtils.todayDateString()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_category),
+                contentDescription = "No Expenses",
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = if (selectedDate == DateUtils.todayDateString()) "No expenses yet" else "No expenses for this date",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = if (selectedDate == DateUtils.todayDateString()) 
+                    "Add your first expense to get started" 
+                else 
+                    "Try selecting a different date or add an expense for today",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
+        }
+    }
 }
 
 @Preview
 @Composable
 private fun HomePreview() {
     ZoExpenseTrackerTheme {
-        Column(Modifier.fillMaxSize()) {
-            HomeScreen(
-                innerPadding = PaddingValues(0.dp),
-                uiState = HomeUiState(
-                    recentItems = listOf(
-                       DocumentItem("1", "Recent Item 1", "Subtitle 1", "₹100", Category.Other, System.currentTimeMillis()),
-                       DocumentItem("2", "Recent Item 2", "Subtitle 2", "₹140", Category.Other, System.currentTimeMillis()),
-                    ),
-                    allItems = listOf(
-                        DocumentItem("1", "Recent Item 1", "Subtitle 1", "₹100", Category.Other, System.currentTimeMillis()),
-                        DocumentItem("2", "Recent Item 2", "Subtitle 2", "₹140", Category.Other, System.currentTimeMillis()),
-                    ),
-                    isGrid = false,
-                    isLoading = false
+        HomeScreen(
+            innerPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
+            uiState = HomeUiState(
+                recentItems = listOf(
+                    DocumentItem("1", "Lunch", "Food • ₹150", "₹150", Category.Food, System.currentTimeMillis()),
+                    DocumentItem("2", "Uber Ride", "Travel • ₹200", "₹200", Category.Travel, System.currentTimeMillis()),
                 ),
-                onEvent = {}
-            )
-        }
+                allItems = listOf(
+                    DocumentItem("1", "Lunch", "Food • ₹150", "₹150", Category.Food, System.currentTimeMillis()),
+                    DocumentItem("2", "Uber Ride", "Travel • ₹200", "₹200", Category.Travel, System.currentTimeMillis()),
+                    DocumentItem("3", "Internet Bill", "Utility • ₹500", "₹500", Category.Utility, System.currentTimeMillis()),
+                ),
+                totalSpentToday = 850L,
+                totalCount = 3,
+                isGrid = false,
+                isLoading = false
+            ),
+            onEvent = {}
+        )
     }
 }

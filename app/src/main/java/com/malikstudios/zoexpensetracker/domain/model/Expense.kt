@@ -6,8 +6,8 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * Enhanced Expense model with multi-currency support
- * amountInSmallestUnit: store currency as Long representing smallest unit (paise/cents/etc).
+ * Expense model for Rupee currency
+ * amountInSmallestUnit: stores amount in paise (smallest Rupee unit).
  * This avoids floating point rounding issues.
  */
 data class Expense(
