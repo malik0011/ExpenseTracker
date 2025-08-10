@@ -80,21 +80,7 @@ dependencies {
     
     // Work Manager
     implementation("androidx.work:work-runtime-ktx:2.10.2")
-    
-    // PDF Generation - using built-in Android PDF generation
-    
-    // Testing dependencies
-    testImplementation(libs.junit)
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    testImplementation("io.mockk:mockk:1.13.9")
-    testImplementation("com.google.truth:truth:1.1.5")
-    testImplementation("androidx.arch.core:core-testing:2.2.0")
-    
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+
     
     // Debug dependencies
     debugImplementation(libs.androidx.ui.tooling)

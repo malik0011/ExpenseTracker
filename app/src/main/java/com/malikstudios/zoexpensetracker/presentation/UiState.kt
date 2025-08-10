@@ -41,18 +41,6 @@ data class AddExpenseUiState(
     val success: Boolean = false
 )
 
-// ---------- Expense List UI State ----------
-data class ExpenseListUiState(
-    val expenses: List<DocumentItem> = emptyList(),
-    val selectedDate: String = DateUtils.todayDateString(),
-    val totalAmount: Long = 0L,
-    val totalCount: Int = 0,
-    val groupBy: GroupingType = GroupingType.TIME,
-    val sortBy: SortingType = SortingType.NEWEST_FIRST,
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
-
 // ---------- Report UI State ----------
 data class ReportUiState(
     val selectedPeriod: ReportPeriod = ReportPeriod.LAST_7_DAYS,
@@ -78,26 +66,3 @@ data class CategoryBreakdown(
     val percentage: Double,
     val amount: Long
 )
-
-data class CategoryTotal(
-    val category: Category,
-    val amount: Long,
-    val count: Int,
-    val percentage: Float
-)
-
-enum class GroupingType {
-    TIME, CATEGORY, AMOUNT
-}
-
-enum class SortingType {
-    NEWEST_FIRST, OLDEST_FIRST, AMOUNT_HIGH_LOW, AMOUNT_LOW_HIGH, ALPHABETICAL
-}
-
-enum class DateRange {
-    TODAY, LAST_7_DAYS, LAST_30_DAYS, THIS_MONTH, LAST_MONTH, CUSTOM
-}
-
-enum class ChartType {
-    BAR, LINE, PIE
-}

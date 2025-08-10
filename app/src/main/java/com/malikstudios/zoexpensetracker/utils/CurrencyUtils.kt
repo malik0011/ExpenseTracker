@@ -42,23 +42,4 @@ object CurrencyUtils {
         
         return "${RupeeCurrency.SYMBOL}$rupees.$paiseStr"
     }
-    
-    /**
-     * Formats paise to Rupee string without symbol
-     * Example: 10050 -> "100.50"
-     */
-    fun formatPaiseToRupeeStringWithoutSymbol(paise: Long): String {
-        val rupees = paise / 100
-        val paisePart = paise % 100
-        val paiseStr = paisePart.toString().padStart(RupeeCurrency.DECIMAL_PLACES, '0')
-        
-        return "$rupees.$paiseStr"
-    }
-    
-    /**
-     * Validate amount input for Rupees
-     */
-    fun isValidAmount(amountText: String): Boolean {
-        return parseToPaise(amountText).isSuccess
-    }
 }

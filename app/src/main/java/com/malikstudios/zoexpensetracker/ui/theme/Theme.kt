@@ -87,14 +87,3 @@ fun ZoExpenseTrackerTheme(
         content = content
     )
 }
-
-// Extension for accessing category colors
-fun getCategoryColor(category: String): Color {
-    return when (category.lowercase()) {
-        "staff" -> AppColors.CategoryStaff
-        "travel" -> AppColors.CategoryTravel
-        "food" -> AppColors.CategoryFood
-        "utility" -> AppColors.CategoryUtility
-        else -> AppColors.CategoryOther
-    }
-}

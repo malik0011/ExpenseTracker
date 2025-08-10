@@ -23,25 +23,3 @@ sealed interface AddExpenseUiEvent {
     data object Save : AddExpenseUiEvent
     data object Cancel : AddExpenseUiEvent
 }
-
-// ---------- Expense List UI Events ----------
-sealed interface ExpenseListUiEvent {
-    data class OpenExpense(val id: String) : ExpenseListUiEvent
-    data class DeleteExpense(val id: String) : ExpenseListUiEvent
-    data class ChangeDate(val date: String) : ExpenseListUiEvent
-    data class ChangeGrouping(val groupBy: GroupingType) : ExpenseListUiEvent
-    data class ChangeSorting(val sortBy: SortingType) : ExpenseListUiEvent
-    data object ShowDatePicker : ExpenseListUiEvent
-    data object RefreshData : ExpenseListUiEvent
-}
-
-// ---------- Report UI Events ----------
-sealed interface ReportUiEvent {
-    data class ChangeDateRange(val range: DateRange) : ReportUiEvent
-    data class ChangeChartType(val type: ChartType) : ReportUiEvent
-    data class SelectCustomDateRange(val startDate: String, val endDate: String) : ReportUiEvent
-    data object ExportToPdf : ReportUiEvent
-    data object ExportToCsv : ReportUiEvent
-    data object ShareReport : ReportUiEvent
-    data object RefreshData : ReportUiEvent
-}
