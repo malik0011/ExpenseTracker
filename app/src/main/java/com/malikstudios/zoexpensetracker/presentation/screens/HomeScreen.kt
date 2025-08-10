@@ -10,19 +10,24 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -31,7 +36,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,14 +52,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.malikstudios.zoexpensetracker.R
 import com.malikstudios.zoexpensetracker.domain.model.Category
 import com.malikstudios.zoexpensetracker.presentation.DocumentItem
 import com.malikstudios.zoexpensetracker.presentation.HomeUiEvent
 import com.malikstudios.zoexpensetracker.presentation.HomeUiState
+import com.malikstudios.zoexpensetracker.ui.theme.AppColors
 import com.malikstudios.zoexpensetracker.ui.theme.ZoExpenseTrackerTheme
 import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
 import com.malikstudios.zoexpensetracker.utils.DateUtils
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,12 +81,10 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Expense Tracker") },
-                navigationIcon = {
+                actions = {
                     IconButton(onClick = { onEvent(HomeUiEvent.RefreshData) }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
-                },
-                actions = {
                     IconButton(onClick = { onEvent(HomeUiEvent.Search) }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
@@ -140,6 +150,91 @@ fun HomeScreen(
                 selectedDate = selectedDate
             )
         }
+
+        // Date Picker Dialog
+        if (showDatePicker) {
+            FullScreenDatePicker(
+                onDateSelected = { date ->
+                    selectedDate = date
+                    onEvent(HomeUiEvent.ChangeDate(date))
+                    showDatePicker = false
+                },
+                onDismiss = { showDatePicker = false }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FullScreenDatePicker(
+    onDateSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis()
+    )
+
+    Surface(
+        modifier = Modifier.fillMaxSize().zIndex(10f),
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Header
+            Spacer(Modifier.height(48.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Select Date",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close"
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Date Picker
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Action Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(millis))
+                            onDateSelected(date)
+                        }
+                    }
+                ) {
+                    Text("OK")
+                }
+            }
+        }
     }
 }
 
@@ -168,9 +263,10 @@ private fun HeaderSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_calendar_month),
+                    painter = painterResource(R.drawable.ic_edit_calender),
                     contentDescription = "Date",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.clickable { onDateClick() }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -182,19 +278,18 @@ private fun HeaderSection(
                 
                 if (selectedDate != DateUtils.todayDateString()) {
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Today",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                        modifier = Modifier
-                            .clickable { onTodayClick() }
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .background(
-                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
-                                RoundedCornerShape(12.dp)
-                            )
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                    Surface(
+                        modifier = Modifier.clickable { onTodayClick() },
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    ) {
+                        Text(
+                            text = "Today",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
             }
             
@@ -448,7 +543,7 @@ private fun ExpenseItem(expense: DocumentItem, onExpenseClick: (String) -> Unit)
                 text = expense.amount,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = AppColors.Amber
             )
         }
     }

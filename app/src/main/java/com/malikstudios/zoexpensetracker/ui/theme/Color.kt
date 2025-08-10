@@ -47,7 +47,8 @@ object AppColors {
     val OnBackground = Color(0xFF111827)      // Dark text on background
     val OnSurface = Color(0xFF111827)         // Dark text on surface
     val OnSurfaceVariant = Color(0xFF6B7280)  // Gray text variant
-    
+    val Amber = Color(0xFFF59E0B) // Amber // Gray text variant
+
     // Chart Colors
     val ChartColors = listOf(
         Color(0xFF8B5CF6), // Purple
