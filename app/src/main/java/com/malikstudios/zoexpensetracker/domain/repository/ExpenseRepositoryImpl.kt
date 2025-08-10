@@ -26,4 +26,10 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override fun getAllExpenses(): Flow<List<Expense>> =
         dao.getAll().map { list -> list.map { it.toDomain() } }
+
+    override fun getTotalForDate(date: String): Flow<Long> {
+        return dao.getTotalForDate(date).map { it } // Return 0 if null
+    }
+
+
 }

@@ -11,4 +11,6 @@ interface ExpenseRepository {
     suspend fun addExpense(expense: Expense)
     fun getExpensesByDate(date: String): Flow<List<Expense>>
     fun getAllExpenses(): Flow<List<Expense>>
+
+    fun getTotalForDate(date: String): Flow<Long> // Returns total amount for a specific date in smallest currency unit
 }

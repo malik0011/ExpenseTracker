@@ -26,8 +26,8 @@ fun Expense.toEntity() = ExpenseEntity(
 fun ExpenseEntity.toDomain() = Expense(
     id = id,
     title = title,
-    amountInPaise = amountInPaise,
-    category = runCatching { Category.valueOf(category) }.getOrDefault(Category.Utility),
+    amountInSmallestUnit = amountInPaise,
+    category = Category.entries.find { it.name == category } ?: Category.Other ,
     notes = notes,
     receiptImageUrl = receiptUrl,
     timestampMillis = timestampMillis,

@@ -14,4 +14,7 @@ object DateUtils {
      */
     fun todayDateString(): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(System.currentTimeMillis()))
+
+    fun fromMillisToDateString(millis: Long): String =
+        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(millis))
 }

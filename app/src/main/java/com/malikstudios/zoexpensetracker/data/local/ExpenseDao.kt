@@ -22,4 +22,7 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE date = :date ORDER BY timestampMillis DESC")
     fun getExpensesByDate(date: String): Flow<List<ExpenseEntity>>
 
+    @Query("SELECT SUM(amountInPaise) FROM expenses WHERE date = :date")
+    fun getTotalForDate(date: String): Flow<Long>
+
 }
