@@ -12,6 +12,12 @@ import com.malikstudios.zoexpensetracker.presentation.ReportUiState
 import com.malikstudios.zoexpensetracker.presentation.CategoryBreakdown
 import com.malikstudios.zoexpensetracker.presentation.DailyTotal
 import com.malikstudios.zoexpensetracker.utils.DateUtils
+import com.malikstudios.zoexpensetracker.utils.PdfGenerator
+import com.malikstudios.zoexpensetracker.utils.CsvGenerator
+import android.content.Context
+import android.content.Intent
+import androidx.core.content.FileProvider
+import java.io.File
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +29,9 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.sumOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import android.os.Environment
 
 @HiltViewModel
 class ReportViewModel @Inject constructor(
@@ -38,6 +47,163 @@ class ReportViewModel @Inject constructor(
 
     fun onPeriodChanged(period: ReportPeriod) {
         loadReportData(period)
+    }
+    
+    fun exportToPdf(context: Context) {
+        Log.d("ReportViewModel", "Starting PDF export...")
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d("ReportViewModel", "Setting loading state...")
+                _uiState.value = _uiState.value.copy(isGeneratingPdf = true, pdfMessage = null)
+                
+                val currentState = _uiState.value
+                Log.d("ReportViewModel", "Generating PDF with data: period=${currentState.selectedPeriod}, total=${currentState.totalAmount}, categories=${currentState.categoryBreakdown.size}, daily=${currentState.dailyTotals.size}")
+                
+                // Check if we have data to generate PDF
+                if (currentState.totalAmount == 0L && currentState.categoryBreakdown.isEmpty()) {
+                    Log.w("ReportViewModel", "No data available for PDF generation")
+                    withContext(Dispatchers.Main) {
+                        _uiState.value = _uiState.value.copy(
+                            isGeneratingPdf = false,
+                            pdfMessage = "No data available to generate PDF"
+                        )
+                    }
+                    return@launch
+                }
+                
+                val pdfFile = PdfGenerator().generateExpenseReport(
+                    context = context,
+                    period = currentState.selectedPeriod,
+                    totalAmount = currentState.totalAmount,
+                    totalCount = currentState.totalCount,
+                    categoryBreakdown = currentState.categoryBreakdown,
+                    dailyTotals = currentState.dailyTotals,
+                    recentExpenses = currentState.recentExpenses
+                )
+                
+                Log.d("ReportViewModel", "PDF generation result: ${pdfFile?.absolutePath}")
+                
+                withContext(Dispatchers.Main) {
+                    if (pdfFile != null) {
+                        // Copy to Downloads folder for user access
+                        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        val downloadsFile = File(downloadsDir, pdfFile.name)
+                        
+                        Log.d("ReportViewModel", "Copying to Downloads: ${downloadsFile.absolutePath}")
+                        
+                        try {
+                            pdfFile.copyTo(downloadsFile, overwrite = true)
+                            Log.d("ReportViewModel", "PDF saved to Downloads: ${downloadsFile.absolutePath}")
+                            
+                            _uiState.value = _uiState.value.copy(
+                                isGeneratingPdf = false,
+                                pdfMessage = "PDF saved to Downloads: ${downloadsFile.name}"
+                            )
+                        } catch (e: Exception) {
+                            Log.e("ReportViewModel", "Error copying to Downloads", e)
+                            _uiState.value = _uiState.value.copy(
+                                isGeneratingPdf = false,
+                                pdfMessage = "Error saving PDF: ${e.message}"
+                            )
+                        }
+                    } else {
+                        Log.e("ReportViewModel", "PDF generation returned null")
+                        _uiState.value = _uiState.value.copy(
+                            isGeneratingPdf = false,
+                            pdfMessage = "Failed to generate PDF"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ReportViewModel", "Error in exportToPdf", e)
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        isGeneratingPdf = false,
+                        pdfMessage = "Error: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun exportToCsv(context: Context): File? {
+        return try {
+            val currentState = _uiState.value
+            val file = CsvGenerator().generateExpenseReport(
+                context = context,
+                period = currentState.selectedPeriod,
+                totalAmount = currentState.totalAmount,
+                totalCount = currentState.totalCount,
+                categoryBreakdown = currentState.categoryBreakdown,
+                dailyTotals = currentState.dailyTotals,
+                recentExpenses = currentState.recentExpenses
+            )
+            Log.d("ReportViewModel", "CSV saved to: ${file.absolutePath}")
+            file
+        } catch (e: Exception) {
+            Log.e("ReportViewModel", "Error generating CSV", e)
+            null
+        }
+    }
+
+    fun shareReport(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _uiState.value = _uiState.value.copy(isGeneratingPdf = true, pdfMessage = null)
+                
+                val currentState = _uiState.value
+                val pdfFile = PdfGenerator().generateExpenseReport(
+                    context = context,
+                    period = currentState.selectedPeriod,
+                    totalAmount = currentState.totalAmount,
+                    totalCount = currentState.totalCount,
+                    categoryBreakdown = currentState.categoryBreakdown,
+                    dailyTotals = currentState.dailyTotals,
+                    recentExpenses = currentState.recentExpenses
+                )
+                
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(isGeneratingPdf = false)
+                    
+                    if (pdfFile != null) {
+                        try {
+                            val uri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.fileprovider",
+                                pdfFile
+                            )
+                            
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "application/pdf"
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                putExtra(Intent.EXTRA_SUBJECT, "Expense Report - ${currentState.selectedPeriod.label}")
+                                putExtra(Intent.EXTRA_TEXT, "Here's your expense report for ${currentState.selectedPeriod.label}")
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            
+                            context.startActivity(Intent.createChooser(shareIntent, "Share Report"))
+                        } catch (e: Exception) {
+                            Log.e("ReportViewModel", "Error sharing report", e)
+                            _uiState.value = _uiState.value.copy(
+                                pdfMessage = "Error sharing: ${e.message}"
+                            )
+                        }
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            pdfMessage = "Failed to generate PDF for sharing"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        isGeneratingPdf = false,
+                        pdfMessage = "Error: ${e.message}"
+                    )
+                }
+                Log.e("ReportViewModel", "Error in shareReport", e)
+            }
+        }
     }
 
     private fun loadReportData(period: ReportPeriod) {

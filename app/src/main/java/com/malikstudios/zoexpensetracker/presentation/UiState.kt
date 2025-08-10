@@ -62,7 +62,9 @@ data class ReportUiState(
     val dailyTotals: List<DailyTotal> = emptyList(),
     val recentExpenses: List<DocumentItem> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isGeneratingPdf: Boolean = false,
+    val pdfMessage: String? = null
 )
 
 // ---------- Supporting Data Classes ----------

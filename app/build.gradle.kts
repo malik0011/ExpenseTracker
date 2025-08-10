@@ -81,6 +81,8 @@ dependencies {
     // Work Manager
     implementation("androidx.work:work-runtime-ktx:2.10.2")
     
+    // PDF Generation - using built-in Android PDF generation
+    
     // Testing dependencies
     testImplementation(libs.junit)
     testImplementation("junit:junit:4.13.2")

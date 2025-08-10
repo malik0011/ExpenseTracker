@@ -1,22 +1,51 @@
 package com.malikstudios.zoexpensetracker.presentation.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,26 +53,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.malikstudios.zoexpensetracker.R
 import com.malikstudios.zoexpensetracker.domain.model.Category
-import com.malikstudios.zoexpensetracker.presentation.DocumentItem
-import com.malikstudios.zoexpensetracker.presentation.HomeUiEvent
-import com.malikstudios.zoexpensetracker.presentation.HomeUiState
 import com.malikstudios.zoexpensetracker.presentation.CategoryBreakdown
 import com.malikstudios.zoexpensetracker.presentation.DailyTotal
+import com.malikstudios.zoexpensetracker.presentation.DocumentItem
 import com.malikstudios.zoexpensetracker.presentation.ReportUiState
+import com.malikstudios.zoexpensetracker.presentation.screens.ReportPeriod
 import com.malikstudios.zoexpensetracker.ui.theme.AppColors
 import com.malikstudios.zoexpensetracker.ui.theme.ZoExpenseTrackerTheme
 import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
 import com.malikstudios.zoexpensetracker.utils.DateUtils
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportScreen(
     uiState: ReportUiState,
     onEvent: (ReportPeriod) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onExportPdf: () -> Unit,
+    onExportCsv: () -> Unit,
+    onShareReport: () -> Unit
 ) {
+    var showExportMenu by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -54,19 +84,32 @@ fun ReportScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { 
-                        // Basic export functionality - show a simple message
-                        // In a real app, this would generate PDF/CSV and save to storage
-                        // For now, we'll just show a placeholder
-                    }) {
-                        Icon(painter = painterResource(R.drawable.ic_download), contentDescription = "Export")
+                    Box {
+                        IconButton(onClick = { showExportMenu = true }) {
+                            Icon(painter = painterResource(R.drawable.ic_download), contentDescription = "Export")
+                        }
+                        DropdownMenu(
+                            expanded = showExportMenu,
+                            onDismissRequest = { showExportMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Export as PDF") },
+                                onClick = {
+                                    onExportPdf()
+                                    showExportMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Export as CSV") },
+                                onClick = {
+                                    onExportCsv()
+                                    showExportMenu = false
+                                }
+                            )
+                        }
                     }
-                    IconButton(onClick = { 
-                        // Basic share functionality - show a simple message
-                        // In a real app, this would trigger Share intent with report data
-                        // For now, we'll just show a placeholder
-                    }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
+                    IconButton(onClick = onShareReport) {
+                        Icon(Icons.Default.Share, contentDescription = "Share Report")
                     }
                 }
             )
@@ -124,8 +167,8 @@ fun ReportScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Period Selector
                 item {
@@ -165,6 +208,57 @@ fun ReportScreen(
                 
                 items(uiState.recentExpenses) { expense ->
                     ExpenseItem(expense = expense)
+                }
+                
+                // PDF Status Message
+                if (uiState.pdfMessage != null) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (uiState.pdfMessage.startsWith("Error")) 
+                                    MaterialTheme.colorScheme.errorContainer 
+                                else 
+                                    MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Text(
+                                text = uiState.pdfMessage,
+                                modifier = Modifier.padding(16.dp),
+                                color = if (uiState.pdfMessage.startsWith("Error")) 
+                                    MaterialTheme.colorScheme.onErrorContainer 
+                                else 
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
+                
+                // Loading indicator for PDF generation
+                if (uiState.isGeneratingPdf) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "Generating PDF...",
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -287,7 +381,7 @@ private fun DailyTotalsChart(dailyTotals: List<DailyTotal>) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // Mock chart - simple bar representation
             Row(
@@ -303,13 +397,13 @@ private fun DailyTotalsChart(dailyTotals: List<DailyTotal>) {
                             Box(
                                 modifier = Modifier
                                     .width(20.dp)
-                                    .height((dailyTotal.amount / 10).coerceAtLeast(20).toInt().dp)
+                                    .height((dailyTotal.amount / 50).coerceAtLeast(10).coerceAtMost(80).toInt().dp)
                                     .background(
                                         color = AppColors.Amber,
                                         shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
                                     )
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "D${index + 1}",
                                 style = MaterialTheme.typography.labelSmall,
@@ -326,13 +420,13 @@ private fun DailyTotalsChart(dailyTotals: List<DailyTotal>) {
                             Box(
                                 modifier = Modifier
                                     .width(20.dp)
-                                    .height(50.dp)
+                                    .height(30.dp)
                                     .background(
                                         color = MaterialTheme.colorScheme.surfaceVariant,
                                         shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
                                     )
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "D${day + 1}",
                                 style = MaterialTheme.typography.labelSmall,
@@ -364,7 +458,7 @@ private fun CategoryBreakdown(categoryBreakdown: List<CategoryBreakdown>) {
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             // Mock category data
             val totalAmount = categoryBreakdown.sumOf { it.amount }
@@ -375,7 +469,7 @@ private fun CategoryBreakdown(categoryBreakdown: List<CategoryBreakdown>) {
                     percentage = item.percentage,
                     amount = item.amount
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
     }
@@ -529,7 +623,10 @@ private fun ReportScreenPreview() {
                 )
             ),
             onEvent = {},
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onExportPdf = {},
+            onExportCsv = {},
+            onShareReport = {}
         )
     }
 }
