@@ -42,6 +42,44 @@ This project was developed using AI assistance tools to streamline the developme
 - **Coroutines**: Asynchronous operations for smooth performance
 - **Navigation**: Type-safe navigation with Compose Navigation
 
+##  How to Use the App
+
+### 🏠 Home Screen
+View all your recorded expenses.
+
+Sort expenses in two ways:
+- **By Time** – most recent first.
+- **By Category** – grouped by category.
+
+Change the displayed date:
+- Tap the calendar icon.
+- Or tap the today/date label on the home screen.
+- Select any date to view expenses for that day.
+
+See the total amount spent for the selected date.
+
+### ➕ Adding Expenses
+- Tap the + (plus) button to open the Add Expense screen.
+- Fill in expense details:
+  - Title
+  - Amount
+  - Category
+  - Notes (optional)
+- **Important**: You can only add expenses for today's date — past and future dates are not allowed.
+
+###  Reports
+- Navigate to the Reports section to:
+  - Generate expense reports.
+  - Download reports (saved in your device's Downloads folder).
+  - Share reports directly with others.
+
+### 📂 File Storage
+- Downloaded reports are saved to:
+  ```
+  /storage/emulated/0/Download/
+  ```
+  (visible in your device's Downloads folder).
+
 ## Screenshots 📸
 
 To add screenshots to your README:
@@ -120,4 +158,45 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## Zobase Assignment Details – Prompt Details
+
+Add the document also. Make a to-do list of what I have to do. Analyze the whole assignment properly.
+
+Let’s start step by step with explanations — why we need this, all the basic things: HLD, what screens we’ll have, architecture, file structure, MVVM pattern. Make things clearly understandable. Include utils classes we might need, mappers, and make sure testing ability can be an advantage here. I need it to be logical. Add some manual test cases to double-check your steps so I can test.
+
+Step 1 — The UI should be minimal and user-friendly, like every important app (based on the use case), because it will be used by all age groups. Functional app, good colors, toast messages, errors, and other UI states. Make sure expenses show credit in green, debit in red, and maybe money in a gold kind of color.
+
+Also think about fonts — for this kind of app, what type of font will be better? Maybe not for the whole app, but for specific text? Suggest the best choice.
+
+Now let’s start — we have done the basic setup. Let’s start with the data layer: DB, modules, application DI setup, repositories, use cases, flows, ViewModel. Follow our checklist from earlier. Where needed, add extra context and think like a pro engineer — what else could be added that will improve the app beyond my advice? Will this help? If yes, include it.
+
+Use Dagger or Hilt for all dependency injections. Got it? Make sure to update the code based on that. Will it help us, or is there a better alternative?
+
+Let’s start with the UI design of the home activity — requirements are already mentioned in the doc. The goal is already there.
+
+How to do it — stick to our custom approach you already know: a good product that any user can use, just like a micro-edit world — good but simple to use. Color codes are already defined; add some creativity from any old product related to this.
+
+Make sure UI is stateless and flows in UDF. Only data will pass, and callbacks will handle actions.
+
+The design should follow all design principles for this domain and follow Android Material Design guidelines — like app bar or other components if needed.
+
+---
+
+## Cursor Prompt
+
+First, get the context of the app and understand the whole project.
+
+Let me give you the full assignment context — I have most of the basic setup done.
+
+Let’s start with what’s not done yet. Also make sure to follow good design/UI/UX practices for this kind of app — money-related color tones should match the app’s theme.
+
+Can you add support for viewing previous dates via calendar or filter on the home screen without breaking anything? Maybe add it on top — load a date picker, and after selecting a date, reload the whole UI with the result (check the date format we’re using so it’s compatible). Also update the selected date in the UI. Add a “Today” chip anywhere, and show it only when we are on any other date.
+
+Thanks, it’s working now. Just wanted to mention the bar graph UI is too big — I have to scroll more than 15 times to reach the bottom. Can you fix that?
+
+Working. Can you now do it for the download report as PDF and the share thing, as mentioned?
+
+Now the PDF download toast is showing, but the file is not visible. Can you do something like using DownloadManager or similar so it uses a notification that I can click to open the PDF? It should be visible in my device’s Downloads folder. Got it?
+
+---
 ⭐ **Star this repository if you find it helpful!**
