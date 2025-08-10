@@ -56,10 +56,13 @@ To add screenshots to your README:
 | Home Screen | Add Expense | Reports |
 |-------------|-------------|---------|
 ```
-<img src="app/src/main/res/drawable/home_ss.png" alt="home"/>
-<img src="app/src/main/res/drawable/add_exp_ss.png" alt="add_expense"/>
-<img src="app/src/main/res/drawable/report_ss.png" alt="reports"/>
-<img src="app/src/main/res/drawable/date_ss.png" alt="reports"/>
+<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+  <img src="app/src/main/res/drawable/home_ss.png" alt="Home" height="300">
+  <img src="app/src/main/res/drawable/add_exp_ss.png" alt="Add Expense" height="300">
+  <img src="app/src/main/res/drawable/report_ss.png" alt="Reports" height="300">
+  <img src="app/src/main/res/drawable/date_ss.png" alt="Date Selection" height="300">
+</div>
+
 
 ## APK Download 📥
 
