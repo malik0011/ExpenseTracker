@@ -5,7 +5,6 @@ package com.malikstudios.zoexpensetracker.domain.model
  */
 object RupeeCurrency {
     const val SYMBOL = "₹"
-    const val CODE = "INR"
     const val NAME = "Indian Rupee"
     const val DECIMAL_PLACES = 2
 }
