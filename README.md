@@ -10,6 +10,21 @@ ZoExpenseTracker is a comprehensive personal finance management app that helps u
 
 This project was developed using AI assistance tools to streamline the development process and ensure best practices. ChatGPT was used for initial project structure planning, Jetpack Compose UI component design, and database schema optimization. GitHub Copilot assisted with code completion, error handling patterns, and Android-specific implementations. The AI tools helped accelerate development while maintaining code quality and following Android development guidelines.
 
+## Index 📑
+
+1. **Key Features Implemented** – Overview of core app functionalities, UI, data handling, and technical stack.
+2. **How to Use the App** – Step-by-step guide for Home Screen, Adding Expenses, and Reports.
+3. **Screenshots 📸** – Visual preview of main screens.
+4. **APK Download 📥** – Direct link to the app’s APK file.
+5. **Prerequisites & Build Instructions** – Requirements and steps to run the project locally.
+6. **Dependencies** – Libraries and frameworks used in the project.
+7. **Architecture 🏗️** – MVVM with Clean Architecture layers explained.
+8. **Contributing 🤝** – How to contribute to the project.
+9. **License 📄** – Licensing information.
+10. **Contact 📧** – Developer details.
+11. **Zobaze Assignment Details – Prompt Details (ChatGPT)** – Complete breakdown of assignment requirements and expectations.
+12. **Cursor Prompt** – Detailed development prompts and change requests used during the build.
+
 ## Key Features Implemented ✅
 
 ### Core Functionality
