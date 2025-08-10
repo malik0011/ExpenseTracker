@@ -55,18 +55,15 @@ To add screenshots to your README:
 
 | Home Screen | Add Expense | Reports |
 |-------------|-------------|---------|
-| ![Home](screenshots/home.png) | ![Add](screenshots/add_expense.png) | ![Reports](screenshots/reports.png) |
 ```
-
-4. **Upload screenshots** to your repository and reference them with relative paths
+<img src="app/src/main/res/drawable/home_ss.png" alt="home"/>
+<img src="app/src/main/res/drawable/add_exp_ss.png" alt="add_expense"/>
+<img src="app/src/main/res/drawable/report_ss.png" alt="reports"/>
+<img src="app/src/main/res/drawable/date_ss.png" alt="reports"/>
 
 ## APK Download 📥
 
-[Download APK](link-to-your-apk-file)
-
-*Note: Replace with actual APK download link when available*
-
-## Installation & Setup ��
+[Download APK](https://drive.google.com/file/d/1PE-e6hNWGBKb3oqRZZIKE62LxGI0I7tc/view?usp=sharing)
 
 ### Prerequisites
 - Android Studio Hedgehog or later
@@ -77,7 +74,7 @@ To add screenshots to your README:
 ### Build Instructions
 1. Clone the repository
 ```bash
-git clone https://github.com/malik0011/ZoExpenseTracker.git
+git clone https://github.com/malik0011/ExpenseTracker
 ```
 
 2. Open in Android Studio
