@@ -1,6 +1,7 @@
 package com.malikstudios.zoexpensetracker.presentation
 
 import com.malikstudios.zoexpensetracker.domain.model.Category
+import com.malikstudios.zoexpensetracker.presentation.screens.ReportPeriod
 
 import com.malikstudios.zoexpensetracker.utils.DateUtils
 
@@ -10,7 +11,6 @@ data class HomeUiState(
     val allItems: List<DocumentItem> = emptyList(),
     val totalSpentToday: Long = 0L, // In paise (smallest Rupee unit)
     val totalCount: Int = 0,
-    val isGrid: Boolean = true,
     val isLoading: Boolean = true,
     val error: String? = null
 )
@@ -55,11 +55,12 @@ data class ExpenseListUiState(
 
 // ---------- Report UI State ----------
 data class ReportUiState(
+    val selectedPeriod: ReportPeriod = ReportPeriod.LAST_7_DAYS,
+    val totalAmount: Long = 0L,
+    val totalCount: Int = 0,
+    val categoryBreakdown: List<CategoryBreakdown> = emptyList(),
     val dailyTotals: List<DailyTotal> = emptyList(),
-    val categoryTotals: List<CategoryTotal> = emptyList(),
-    val totalExpenses: Long = 0L,
-    val dateRange: DateRange = DateRange.LAST_7_DAYS,
-    val chartType: ChartType = ChartType.BAR,
+    val recentExpenses: List<DocumentItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -67,8 +68,13 @@ data class ReportUiState(
 // ---------- Supporting Data Classes ----------
 data class DailyTotal(
     val date: String,
-    val amount: Long,
-    val count: Int
+    val amount: Long
+)
+
+data class CategoryBreakdown(
+    val category: Category,
+    val percentage: Double,
+    val amount: Long
 )
 
 data class CategoryTotal(

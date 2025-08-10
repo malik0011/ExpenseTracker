@@ -43,7 +43,6 @@ class ExpenseViewModel @Inject constructor(
         allItems = emptyList(),
         totalSpentToday = 0L,
         totalCount = 0,
-        isGrid = false,
         isLoading = true
     ))
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -105,9 +104,7 @@ class ExpenseViewModel @Inject constructor(
             is HomeUiEvent.CreateNew -> {
                 // You might trigger navigation to AddExpense screen
             }
-            is HomeUiEvent.ToggleLayout -> {
-                _uiState.update { it.copy(isGrid = !it.isGrid) }
-            }
+            // Layout toggle removed as it's no longer needed
             is HomeUiEvent.Search -> {
                 // Trigger search UI
             }

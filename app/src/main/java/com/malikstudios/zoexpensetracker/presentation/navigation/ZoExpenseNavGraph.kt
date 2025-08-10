@@ -12,9 +12,11 @@ import androidx.navigation.compose.composable
 import com.malikstudios.zoexpensetracker.presentation.HomeUiEvent
 import com.malikstudios.zoexpensetracker.presentation.screens.AddExpenseScreen
 import com.malikstudios.zoexpensetracker.presentation.screens.HomeScreen
+import com.malikstudios.zoexpensetracker.presentation.screens.ReportScreen
 import com.malikstudios.zoexpensetracker.presentation.screens.TransactionHistoryScreen
 import com.malikstudios.zoexpensetracker.presentation.viewmodel.AddExpenseViewModel
 import com.malikstudios.zoexpensetracker.presentation.viewmodel.ExpenseViewModel
+import com.malikstudios.zoexpensetracker.presentation.viewmodel.ReportViewModel
 import com.malikstudios.zoexpensetracker.ui.theme.ZoExpenseTrackerTheme
 
 @Composable
@@ -38,6 +40,10 @@ fun ExpenseNavGraph(
                         navController.navigate(NavRoutes.AddExpense.route)
                         return@HomeScreen
                     }
+                    if (event == HomeUiEvent.OpenReport) {
+                        navController.navigate(NavRoutes.Report.route)
+                        return@HomeScreen
+                    }
                     viewModel.onEvent(event)
                 }
             )
@@ -58,6 +64,17 @@ fun ExpenseNavGraph(
             ZoExpenseTrackerTheme {
                 TransactionHistoryScreen()
             }
+        }
+        
+        composable(NavRoutes.Report.route) {
+            val viewModel: ReportViewModel = hiltViewModel()
+            val state by viewModel.uiState.collectAsState()
+
+            ReportScreen(
+                uiState = state,
+                onEvent = { viewModel.onPeriodChanged(it) },
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

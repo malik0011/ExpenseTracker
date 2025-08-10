@@ -24,6 +24,9 @@ class ExpenseRepositoryImpl @Inject constructor(
     override fun getExpensesByDate(date: String): Flow<List<Expense>> =
         dao.getExpensesByDate(date).map { list -> list.map { it.toDomain() } }
 
+    override fun getExpensesByDateRange(startDate: String, endDate: String): Flow<List<Expense>> =
+        dao.getExpensesByDateRange(startDate, endDate).map { list -> list.map { it.toDomain() } }
+
     override fun getAllExpenses(): Flow<List<Expense>> =
         dao.getAll().map { list -> list.map { it.toDomain() } }
 

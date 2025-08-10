@@ -3,13 +3,13 @@ package com.malikstudios.zoexpensetracker.presentation
 import com.malikstudios.zoexpensetracker.domain.model.Category
 
 // ---------- Home UI Events ----------
-sealed interface HomeUiEvent {
-    data class OpenItem(val id: String) : HomeUiEvent
-    data object CreateNew : HomeUiEvent
-    data object ToggleLayout : HomeUiEvent
-    data object Search : HomeUiEvent
-    data object RefreshData : HomeUiEvent
-    data class ChangeDate(val date: String) : HomeUiEvent
+sealed class HomeUiEvent {
+    data object CreateNew : HomeUiEvent()
+    data object Search : HomeUiEvent()
+    data object RefreshData : HomeUiEvent()
+    data object OpenReport : HomeUiEvent()
+    data class OpenItem(val id: String) : HomeUiEvent()
+    data class ChangeDate(val date: String) : HomeUiEvent()
 }
 
 // ---------- Add Expense UI Events ----------

@@ -71,7 +71,8 @@ import java.util.Locale
 fun HomeScreen(
     innerPadding: androidx.compose.foundation.layout.PaddingValues,
     uiState: HomeUiState,
-    onEvent: (HomeUiEvent) -> Unit
+    onEvent: (HomeUiEvent) -> Unit,
+    onNavigateToReport: () -> Unit = {}
 ) {
     var selectedDate by remember { mutableStateOf(DateUtils.todayDateString()) }
     var groupByCategory by remember { mutableStateOf(false) }
@@ -85,8 +86,8 @@ fun HomeScreen(
                     IconButton(onClick = { onEvent(HomeUiEvent.RefreshData) }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
-                    IconButton(onClick = { onEvent(HomeUiEvent.Search) }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    IconButton(onClick = { onEvent(HomeUiEvent.OpenReport) }) {
+                        Icon(painter = painterResource(R.drawable.ic_bar_chart), contentDescription = "Report")
                     }
                 }
             )
@@ -605,10 +606,10 @@ private fun HomePreview() {
                 ),
                 totalSpentToday = 850L,
                 totalCount = 3,
-                isGrid = false,
                 isLoading = false
             ),
-            onEvent = {}
+            onEvent = {},
+            onNavigateToReport = {}
         )
     }
 }
