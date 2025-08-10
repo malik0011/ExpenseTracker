@@ -85,6 +85,8 @@ fun ExpenseNavGraph(
                 onNavigateBack = { navController.popBackStack() },
                 onExportPdf = {
                     viewModel.exportToPdf(context)
+                    // Add toast notification for PDF export (same as CSV)
+                    android.widget.Toast.makeText(context, "Generating PDF...", android.widget.Toast.LENGTH_SHORT).show()
                 },
                 onExportCsv = {
                     val file = viewModel.exportToCsv(context)

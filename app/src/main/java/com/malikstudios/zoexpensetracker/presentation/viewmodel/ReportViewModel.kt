@@ -95,12 +95,27 @@ class ReportViewModel @Inject constructor(
                             pdfFile.copyTo(downloadsFile, overwrite = true)
                             Log.d("ReportViewModel", "PDF saved to Downloads: ${downloadsFile.absolutePath}")
                             
+                            // Show toast notification for successful PDF save (same as CSV)
+                            android.widget.Toast.makeText(
+                                context, 
+                                "PDF saved to Downloads: ${downloadsFile.absolutePath}", 
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                            
                             _uiState.value = _uiState.value.copy(
                                 isGeneratingPdf = false,
                                 pdfMessage = "PDF saved to Downloads: ${downloadsFile.name}"
                             )
                         } catch (e: Exception) {
                             Log.e("ReportViewModel", "Error copying to Downloads", e)
+                            
+                            // Show error toast for PDF
+                            android.widget.Toast.makeText(
+                                context, 
+                                "Error saving PDF: ${e.message}", 
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                            
                             _uiState.value = _uiState.value.copy(
                                 isGeneratingPdf = false,
                                 pdfMessage = "Error saving PDF: ${e.message}"
