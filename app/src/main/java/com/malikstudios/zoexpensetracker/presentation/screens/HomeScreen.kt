@@ -486,7 +486,7 @@ private fun CategoryHeader(category: Category, totalAmount: Double) {
             text = "₹${String.format("%.2f", totalAmount)}",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = AppColors.Success
         )
     }
 }
@@ -510,14 +510,14 @@ private fun ExpenseItem(expense: DocumentItem, onExpenseClick: (String) -> Unit)
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    .background(AppColors.Info.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = expense.category.name.first().toString(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
             
