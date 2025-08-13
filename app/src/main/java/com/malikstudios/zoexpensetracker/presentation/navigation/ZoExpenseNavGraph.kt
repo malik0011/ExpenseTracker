@@ -7,7 +7,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import android.content.Intent
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,12 +19,6 @@ import com.malikstudios.zoexpensetracker.presentation.viewmodel.AddExpenseViewMo
 import com.malikstudios.zoexpensetracker.presentation.viewmodel.ExpenseViewModel
 import com.malikstudios.zoexpensetracker.presentation.viewmodel.ReportViewModel
 import com.malikstudios.zoexpensetracker.ui.theme.ZoExpenseTrackerTheme
-import android.util.Log
-import android.content.Context
-import androidx.core.content.FileProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun ExpenseNavGraph(
@@ -41,7 +34,6 @@ fun ExpenseNavGraph(
             val state by viewModel.uiState.collectAsState()
 
             HomeScreen(
-                innerPadding = innerPadding,
                 uiState = state,
                 onEvent = { event ->
                     if (event == HomeUiEvent.CreateNew) {
@@ -67,6 +59,7 @@ fun ExpenseNavGraph(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
+
         composable(NavRoutes.History.route) {
             val viewModel: ExpenseViewModel = hiltViewModel()
             ZoExpenseTrackerTheme {

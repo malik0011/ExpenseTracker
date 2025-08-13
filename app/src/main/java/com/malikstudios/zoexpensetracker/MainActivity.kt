@@ -62,25 +62,11 @@ class MainActivity : ComponentActivity() {
             ZoExpenseTrackerTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-//                    topBar = {
-//                        TopAppBar(
-//                            title = { Text("Home") },
-//                            actions = { /* Icons */ },
-//                            modifier = Modifier.statusBarsPadding() // <-- this adds safe space
-//                        )
-//                    }
                 ) { innerPadding ->
-//                    Box(
-//                        modifier = Modifier
-//                            .padding(top = innerPadding.calculateTopPadding())
-//                            .statusBarsPadding()
-//                            .fillMaxSize()
-//                    ) {
-                        ExpenseNavGraph(
-                            innerPadding = innerPadding,
-                            navController = navController
-                        )
-//                    }
+                    ExpenseNavGraph(
+                        innerPadding = innerPadding,
+                        navController = navController
+                    )
                 }
             }
         }

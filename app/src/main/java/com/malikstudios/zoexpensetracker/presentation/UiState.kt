@@ -7,6 +7,7 @@ import com.malikstudios.zoexpensetracker.utils.DateUtils
 
 // ---------- Home UI State ----------
 data class HomeUiState(
+    @Deprecated("not required right now use AllItems instead")
     val recentItems: List<DocumentItem> = emptyList(),
     val allItems: List<DocumentItem> = emptyList(),
     val totalSpentToday: Long = 0L, // In paise (smallest Rupee unit)

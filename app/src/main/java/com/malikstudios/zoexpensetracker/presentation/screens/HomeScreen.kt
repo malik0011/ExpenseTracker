@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,7 +67,6 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    innerPadding: androidx.compose.foundation.layout.PaddingValues,
     uiState: HomeUiState,
     onEvent: (HomeUiEvent) -> Unit,
     onNavigateToReport: () -> Unit = {}
@@ -445,7 +442,13 @@ private fun ExpensesList(
         ) {
             if (groupByCategory) {
                 // Group by category
+
+                //put this on derived state of
+                val grpItems by derivedStateOf {
+                    expenses.groupBy { it.category }
+                }
                 val groupedExpenses = expenses.groupBy { it.category }
+
                 groupedExpenses.forEach { (category, categoryExpenses) ->
                     item {
                         CategoryHeader(category, categoryExpenses.sumOf { 
@@ -593,7 +596,6 @@ private fun EmptyState(selectedDate: String = DateUtils.todayDateString()) {
 private fun HomePreview() {
     ZoExpenseTrackerTheme {
         HomeScreen(
-            innerPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
             uiState = HomeUiState(
                 recentItems = listOf(
                     DocumentItem("1", "Lunch", "Food • ₹150", "₹150", Category.Food, System.currentTimeMillis()),

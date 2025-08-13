@@ -38,6 +38,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +52,7 @@ import com.malikstudios.zoexpensetracker.presentation.AddExpenseUiState
 import com.malikstudios.zoexpensetracker.ui.theme.AppColors
 import com.malikstudios.zoexpensetracker.ui.theme.ZoExpenseTrackerTheme
 import com.malikstudios.zoexpensetracker.utils.CurrencyUtils
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,11 +62,15 @@ fun AddExpenseScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val conScope = rememberCoroutineScope()
     
     // Handle success state
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            snackbarHostState.showSnackbar("Expense added successfully!")
+            conScope.launch {
+                // Reset the state after showing success message
+                snackbarHostState.showSnackbar("Expense added successfully!")
+            }
             onNavigateBack()
         }
     }
